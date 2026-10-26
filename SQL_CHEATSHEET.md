@@ -762,3 +762,149 @@ FROM employees;
 10. Understand aggregate behavior on empty datasets.
 
 ---
+
+---
+
+# 16. GROUP BY AND HAVING
+
+**Purpose:** Group records, calculate aggregates, and filter summarized results.
+
+## GROUP BY Syntax
+
+```sql
+SELECT
+    department,
+    COUNT(*) AS employee_count
+FROM employees
+GROUP BY department;
+```
+
+## Common Aggregations with GROUP BY
+
+| Function | Purpose |
+|---|---|
+| `COUNT(*)` | Count rows in each group |
+| `SUM()` | Total values per group |
+| `AVG()` | Average values per group |
+| `MIN()` | Minimum value per group |
+| `MAX()` | Maximum value per group |
+| `COUNT(DISTINCT)` | Count unique non-NULL values per group |
+
+## GROUP BY Multiple Columns
+
+```sql
+SELECT
+    department,
+    salary,
+    COUNT(*) AS employee_count
+FROM employees
+GROUP BY department, salary;
+```
+
+## HAVING Syntax
+
+```sql
+SELECT
+    department,
+    COUNT(*) AS employee_count
+FROM employees
+GROUP BY department
+HAVING COUNT(*) > 1;
+```
+
+## WHERE vs HAVING
+
+| WHERE | HAVING |
+|---|---|
+| Filters individual rows | Filters aggregated groups |
+| Evaluated logically before grouping | Evaluated logically after grouping |
+| Used for row conditions | Used for group-level conditions |
+| Cannot directly evaluate aggregates | Can evaluate aggregates |
+
+## WHERE + GROUP BY + HAVING
+
+```sql
+SELECT
+    department,
+    COUNT(*) AS employee_count
+FROM employees
+WHERE salary >= 65000
+GROUP BY department
+HAVING COUNT(*) >= 2;
+```
+
+## Conditional Aggregation
+
+```sql
+SELECT
+    department,
+    COUNT(*) AS total_employees,
+    COUNT(*) FILTER (
+        WHERE salary >= 80000
+    ) AS high_salary_employees
+FROM employees
+GROUP BY department;
+```
+
+## ROLLUP
+
+Creates subtotals and grand totals.
+
+```sql
+SELECT
+    department,
+    SUM(salary) AS total_salary
+FROM employees
+GROUP BY ROLLUP(department);
+```
+
+## CUBE
+
+Generates aggregates for all combinations of grouping columns.
+
+```sql
+SELECT
+    department,
+    salary,
+    COUNT(*) AS employee_count
+FROM employees
+GROUP BY CUBE(department, salary);
+```
+
+## SQL Logical Processing Order
+
+1. FROM
+2. WHERE
+3. GROUP BY
+4. HAVING
+5. SELECT
+6. DISTINCT
+7. ORDER BY
+8. LIMIT / OFFSET
+
+## Data Engineering Applications
+
+- Department-level reporting
+- Daily and monthly transaction summaries
+- Payroll reconciliation
+- Duplicate detection
+- Data quality validation
+- Customer-level aggregations
+- Revenue analysis
+- KPI reporting
+
+## Interview Tips
+
+**GROUP BY vs DISTINCT:** GROUP BY creates groups for aggregation; DISTINCT removes duplicate output rows.
+
+**WHERE vs HAVING:** WHERE filters rows before grouping; HAVING filters groups after aggregation.
+
+**GROUP BY with NULL:** NULL grouping values are placed in the same group.
+
+**GROUP BY without aggregates:** Can return unique combinations of grouping columns.
+
+**ROLLUP vs CUBE:** ROLLUP generates hierarchical subtotals; CUBE generates all grouping combinations.
+
+**Important:** Every selected non-aggregate expression generally must be included in GROUP BY or be functionally dependent on its grouping columns.
+
+---
