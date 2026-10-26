@@ -431,3 +431,207 @@ This is a simplified logical model; the database optimizer may execute physical 
 10. Understand the difference between SQL dialects.
 
 ---
+---
+
+# 13. DATE AND TIME FUNCTIONS
+
+**Purpose:** Work with dates, timestamps, intervals, and time-based calculations in PostgreSQL.
+
+## Date and Time Data Types
+
+| Data Type | Purpose |
+|---|---|
+| DATE | Stores calendar dates |
+| TIME | Stores time without time zone |
+| TIMESTAMP | Stores date and time without time zone |
+| TIMESTAMPTZ | Stores a time zone-aware instant |
+| INTERVAL | Represents a duration |
+
+## Current Date and Time
+
+| Function | Purpose |
+|---|---|
+| `CURRENT_DATE` | Current date |
+| `CURRENT_TIME` | Current time with time zone |
+| `NOW()` | Current transaction timestamp |
+| `CURRENT_TIMESTAMP` | Current transaction timestamp |
+| `LOCALTIME` | Current time without time zone |
+| `LOCALTIMESTAMP` | Current timestamp without time zone |
+
+## Date Functions
+
+| Function | Purpose | Example |
+|---|---|---|
+| `EXTRACT()` | Extract date component | `EXTRACT(YEAR FROM CURRENT_DATE)` |
+| `DATE_PART()` | Extract date component | `DATE_PART('month', CURRENT_DATE)` |
+| `DATE_TRUNC()` | Truncate to time boundary | `DATE_TRUNC('month', NOW())` |
+| `AGE()` | Calculate symbolic interval | `AGE(CURRENT_DATE, DATE '2020-01-01')` |
+| `TO_CHAR()` | Format date as text | `TO_CHAR(CURRENT_DATE, 'YYYY-MM-DD')` |
+| `TO_DATE()` | Convert text to date | `TO_DATE('26-10-2026', 'DD-MM-YYYY')` |
+| `TO_TIMESTAMP()` | Convert text to timestamp | `TO_TIMESTAMP('2026-10-26', 'YYYY-MM-DD')` |
+
+## Date Arithmetic
+
+```sql
+-- Add 7 days
+SELECT CURRENT_DATE + 7;
+
+-- Subtract 30 days
+SELECT CURRENT_DATE - 30;
+
+-- Add 3 months
+SELECT CURRENT_DATE + INTERVAL '3 months';
+
+-- Difference between dates in days
+SELECT DATE '2026-10-26' - DATE '2026-10-01';
+```
+
+## DATE_TRUNC Examples
+
+```sql
+SELECT DATE_TRUNC('day', NOW());
+
+SELECT DATE_TRUNC('week', NOW());
+
+SELECT DATE_TRUNC('month', NOW());
+
+SELECT DATE_TRUNC('year', NOW());
+```
+
+## Date Filtering
+
+```sql
+-- Filter records in a date range
+SELECT *
+FROM orders
+WHERE order_date >= DATE '2026-10-01'
+  AND order_date < DATE '2026-11-01';
+```
+
+*Requires an `orders` table.*
+
+## Data Engineering Applications
+
+| Scenario | Function |
+|---|---|
+| ETL processing timestamp | `CURRENT_TIMESTAMP` |
+| Daily processing date | `CURRENT_DATE` |
+| Monthly reporting | `DATE_TRUNC('month', timestamp_column)` |
+| Extract year or month | `EXTRACT()` |
+| Incremental loading | Timestamp ranges and watermarks |
+| Date formatting | `TO_CHAR()` |
+| Convert date strings | `TO_DATE()` |
+| Calculate elapsed time | Date subtraction or `AGE()` |
+
+## Interview Tips
+
+**CURRENT_DATE vs NOW():** CURRENT_DATE returns a date; NOW() returns a timestamp with time zone.
+
+**EXTRACT vs DATE_TRUNC:** EXTRACT retrieves an individual component. DATE_TRUNC rounds down to a time boundary.
+
+**TIMESTAMP vs TIMESTAMPTZ:** TIMESTAMP does not store time-zone information. TIMESTAMPTZ represents an instant and is displayed according to the session time zone.
+
+**DATE vs TIMESTAMP:** DATE stores only a calendar date, whereas TIMESTAMP also includes time.
+
+**Best practice:** For timestamp ranges, prefer `>= start AND < end` instead of inclusive end-of-day timestamps.
+
+---
+
+---
+
+# 14. NULL HANDLING
+
+**Purpose:** Identify, replace, compare, and process missing values in SQL.
+
+## Understanding NULL
+
+NULL represents a missing or unknown value.
+
+NULL is different from zero, an empty string, and FALSE.
+
+## Common NULL Functions and Operators
+
+| Function / Operator | Purpose |
+|---|---|
+| `IS NULL` | Identify missing values |
+| `IS NOT NULL` | Identify non-NULL values |
+| `COALESCE()` | Return the first non-NULL argument |
+| `NULLIF()` | Return NULL when two expressions are equal |
+| `IS DISTINCT FROM` | NULL-safe inequality |
+| `IS NOT DISTINCT FROM` | NULL-safe equality |
+| `NULLS FIRST` | Place NULLs first when sorting |
+| `NULLS LAST` | Place NULLs last when sorting |
+
+## Common Syntax
+
+```sql
+-- Find missing values
+SELECT *
+FROM employees
+WHERE department IS NULL;
+
+-- Find available values
+SELECT *
+FROM employees
+WHERE department IS NOT NULL;
+
+-- Replace missing values
+SELECT COALESCE(department, 'Unknown')
+FROM employees;
+
+-- Prevent division by zero
+SELECT 100.0 / NULLIF(0, 0);
+
+-- NULL-safe comparison
+SELECT NULL IS NOT DISTINCT FROM NULL;
+```
+
+## NULL with Aggregate Functions
+
+| Expression | Behavior |
+|---|---|
+| `COUNT(*)` | Counts all rows |
+| `COUNT(column)` | Counts non-NULL values |
+| `COUNT(DISTINCT column)` | Counts distinct non-NULL values |
+| `SUM(column)` | Ignores NULL inputs |
+| `AVG(column)` | Ignores NULL inputs |
+| `MIN(column)` | Ignores NULL inputs |
+| `MAX(column)` | Ignores NULL inputs |
+
+## NULL vs Empty String
+
+```sql
+-- Convert an empty string into NULL
+SELECT NULLIF('', '');
+
+-- Convert blank or NULL text to Unknown
+SELECT COALESCE(NULLIF(TRIM('   '), ''), 'Unknown');
+```
+
+## Data Engineering Applications
+
+- Detect missing data in source datasets.
+- Standardize blank and NULL values.
+- Validate mandatory columns.
+- Calculate missing-data percentages.
+- Compare source and target records.
+- Apply default values when business rules permit.
+- Prevent division-by-zero errors.
+- Build data quality checks.
+
+## Interview Tips
+
+**NULL vs Zero:** NULL means missing or unknown. Zero is a known numeric value.
+
+**COALESCE vs NULLIF:** COALESCE returns the first non-NULL argument. NULLIF returns NULL when two expressions are equal.
+
+**COUNT(*) vs COUNT(column):** COUNT(*) counts every row, while COUNT(column) ignores NULL values.
+
+**NULL and NOT IN:** NULL values in a NOT IN list can cause unexpected UNKNOWN results. Consider NOT EXISTS when appropriate.
+
+**NULL-safe comparison:** Use IS DISTINCT FROM or IS NOT DISTINCT FROM when comparisons must handle NULL explicitly.
+
+**Important:** Replacing missing values with zero can distort calculations, especially averages.
+
+---
+
