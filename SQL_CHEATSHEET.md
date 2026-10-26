@@ -635,3 +635,130 @@ SELECT COALESCE(NULLIF(TRIM('   '), ''), 'Unknown');
 
 ---
 
+---
+
+# 15. AGGREGATE FUNCTIONS
+
+**Purpose:** Perform calculations across multiple rows and return summarized results.
+
+## Common Aggregate Functions
+
+| Function | Purpose |
+|---|---|
+| `COUNT(*)` | Count all rows |
+| `COUNT(column)` | Count non-NULL values |
+| `COUNT(DISTINCT column)` | Count unique non-NULL values |
+| `SUM(column)` | Calculate total |
+| `AVG(column)` | Calculate average |
+| `MIN(column)` | Find minimum |
+| `MAX(column)` | Find maximum |
+| `STRING_AGG()` | Combine text values |
+| `BOOL_AND()` | Check whether all non-NULL conditions are TRUE |
+| `BOOL_OR()` | Check whether any non-NULL condition is TRUE |
+
+## Basic Syntax
+
+```sql
+SELECT
+    COUNT(*) AS total_employees,
+    SUM(salary) AS total_salary,
+    AVG(salary) AS average_salary,
+    MIN(salary) AS lowest_salary,
+    MAX(salary) AS highest_salary
+FROM employees;
+```
+
+## COUNT Differences
+
+| Expression | Behavior |
+|---|---|
+| `COUNT(*)` | Counts every row |
+| `COUNT(salary)` | Counts non-NULL salaries |
+| `COUNT(DISTINCT salary)` | Counts unique non-NULL salary values |
+| `COUNT(*) - COUNT(salary)` | Counts missing salaries |
+
+## Aggregate Functions with WHERE
+
+```sql
+SELECT
+    COUNT(*) AS employee_count
+FROM employees
+WHERE salary > 70000;
+```
+
+## Aggregate Functions with GROUP BY
+
+```sql
+SELECT
+    department,
+    COUNT(*) AS employee_count,
+    SUM(salary) AS total_salary,
+    ROUND(AVG(salary), 2) AS average_salary
+FROM employees
+GROUP BY department;
+```
+
+## Conditional Aggregation
+
+```sql
+SELECT
+    COUNT(*) FILTER (
+        WHERE department = 'IT'
+    ) AS it_employees,
+
+    COUNT(*) FILTER (
+        WHERE department = 'HR'
+    ) AS hr_employees
+FROM employees;
+```
+
+## Aggregate NULL Behavior
+
+- `COUNT(*)` counts all rows.
+- `COUNT(column)` ignores NULL values.
+- `SUM()`, `AVG()`, `MIN()`, and `MAX()` ignore NULL inputs.
+- `COUNT()` returns zero when no rows match.
+- `SUM()`, `AVG()`, `MIN()`, and `MAX()` return NULL when no non-NULL values are available.
+
+## Data Engineering Applications
+
+| Application | Aggregate Function |
+|---|---|
+| Source record count | `COUNT(*)` |
+| Unique ID validation | `COUNT(DISTINCT id)` |
+| Financial reconciliation | `SUM(amount)` |
+| Average transaction value | `AVG(amount)` |
+| Earliest event | `MIN(timestamp)` |
+| Latest event | `MAX(timestamp)` |
+| Missing-value detection | `COUNT(*) - COUNT(column)` |
+| Department-level reporting | `GROUP BY` with aggregates |
+| Conditional metrics | `FILTER` or `CASE` |
+
+## Important Interview Differences
+
+**COUNT(*) vs COUNT(column):** COUNT(*) counts all rows, while COUNT(column) ignores NULL values.
+
+**WHERE vs HAVING:** WHERE filters individual rows before aggregation; HAVING filters groups after aggregation.
+
+**SUM vs SUM(DISTINCT):** SUM adds all non-NULL values, including duplicates. SUM(DISTINCT) adds only unique non-NULL values.
+
+**AVG and NULL:** AVG ignores NULL values rather than treating them as zero.
+
+**Aggregate without GROUP BY:** Summarizes the entire filtered dataset.
+
+**Aggregate with GROUP BY:** Produces separate summary results for each group.
+
+## Best Practices
+
+1. Use meaningful aliases for aggregate results.
+2. Handle NULL values explicitly.
+3. Avoid unnecessary DISTINCT operations.
+4. Use WHERE to filter unnecessary rows before aggregation.
+5. Use GROUP BY for category-level summaries.
+6. Use HAVING to filter aggregate results.
+7. Use NUMERIC for exact financial calculations.
+8. Protect percentage calculations against division by zero.
+9. Use aggregate functions for data quality validation.
+10. Understand aggregate behavior on empty datasets.
+
+---
